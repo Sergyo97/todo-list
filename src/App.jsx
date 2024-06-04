@@ -2,17 +2,21 @@ import './App.css';
 import { Button, Checkbox, IconButton, TextField } from '@mui/material';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
+import CheckIcon from '@mui/icons-material/Check';
 import { useState } from 'react';
 
 function App() {
-  const [tasksCompleted, setTasksCompleted] = useState(0);
   const [taskInput, setTaskInput] = useState('');
   const [tasks, setTasks] = useState([
     { checked: false, label: 'Tarea 1' },
     { checked: false, label: 'Tarea 2' },
     { checked: false, label: 'Tarea 3' }
   ]);
-  const [editingTask, setEditingTask] = useState(false);
+  const [editingTask, setEditingTask] = useState(null);
+  const [editInputValue, setEditInputValue] = useState('');
+
+  // DERIVED STATE
+  const tasksCompleted = tasks.filter((t) => t.checked).length;
 
   function addTask() {
     setTasks((prevState) => [...prevState, { checked: false, label: taskInput }]);
@@ -23,16 +27,21 @@ function App() {
     setTasks((prevState) => prevState.filter((t) => t.label !== task));
   }
 
-  function editTask(event, task) {
-    // TO ASK Cómo mondá hago que se vuelva editable solo esa tarea y no todas (sin una propiedad)?
-    console.log(event.target.value, task);
-    setTasks(tasks.map((t) => (t.label === task ? { ...t, label: event.target.value } : t)));
+  function editTask(task) {
+    setEditingTask(task.label);
+    setEditInputValue(task.label);
+  }
+
+  function updateTask(value, task) {
+    setTasks((prevState) =>
+      prevState.map((t) => (t.label === task.label ? { ...t, label: value } : t))
+    );
   }
 
   function checkTask(event, task) {
-    setTasks(tasks.map((t) => (t.label === task ? { ...t, checked: event.target.checked } : t)));
-    //TO ASK
-    setTasksCompleted(tasks.filter((t) => t.checked).length);
+    setTasks((prevState) =>
+      prevState.map((t) => (t.label === task ? { ...t, checked: event.target.checked } : t))
+    );
   }
 
   return (
@@ -52,25 +61,35 @@ function App() {
             onChange={(event) => {
               setTaskInput(event.target.value);
             }}></TextField>
-          <Button onClick={addTask}>Agregar tarea</Button>
+          <Button onClick={addTask} disabled={taskInput === ''}>
+            Agregar tarea
+          </Button>
         </div>
         <ul>
           {tasks.map((t) => (
             <li className="flex flex-row items-center justify-center" key={t.label}>
               <Checkbox checked={t.checked} onChange={(event) => checkTask(event, t.label)} />
               <div className="flex flex-row gap-3 justify-between items-center">
-                {editingTask ? (
+                {editingTask === t.label ? (
                   <TextField
-                    value={t.label}
+                    value={editInputValue}
                     size="small"
                     variant="outlined"
-                    onChange={(event) => editTask(event, t)}></TextField>
+                    onChange={(event) => {
+                      setEditInputValue(event.target.value);
+                    }}></TextField>
                 ) : (
                   <p>{t.label}</p>
                 )}
-                <IconButton onClick={() => setEditingTask(true)}>
-                  <EditIcon />
-                </IconButton>
+                {editingTask === t.label ? (
+                  <IconButton onClick={() => updateTask(editInputValue, t)}>
+                    <CheckIcon />
+                  </IconButton>
+                ) : (
+                  <IconButton onClick={() => editTask(t)}>
+                    <EditIcon />
+                  </IconButton>
+                )}
                 <IconButton onClick={() => deleteTask(t.label)}>
                   <DeleteIcon />
                 </IconButton>

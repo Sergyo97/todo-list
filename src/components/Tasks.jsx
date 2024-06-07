@@ -1,13 +1,16 @@
-export default function Tasks({ tasks }) {
+import Task from './Task.jsx';
+
+export default function Tasks({ tasks, handleEdit, handleDelete, handleCheck }) {
   return (
     <ul>
+      {/*TODO: PROP Types*/}
       {tasks.map((task) => (
-        <li key={task.name} className="flex gap-2">
-          <input type="checkbox" />
-          <p>{task.name}</p>
-          <button>Edit</button>
-          <button>Delete</button>
-        </li>
+        <Task
+          key={task.id}
+          task={task}
+          onEdit={handleEdit}
+          onDelete={handleDelete}
+          onCheck={handleCheck}></Task>
       ))}
     </ul>
   );
